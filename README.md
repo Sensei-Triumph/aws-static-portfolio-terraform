@@ -35,12 +35,12 @@ CloudFront distributions can incur charges. Check current AWS pricing and set ac
 2. Edit `terraform.tfvars`:
 
    ```hcl
-   aws_region        = "us-east-1"
-   bucket_name       = "your-unique-portfolio-bucket-name"
-   deploy_user_name  = "portfolio-deploy"
+   aws_region       = "us-east-1"
+   bucket_name      = "static-portfolio-123456789012"
+   deploy_user_name = "portfolio-deploy"
    ```
 
-   Bucket names are globally unique across AWS and must be lowercase. `terraform.tfvars` is ignored by Git.
+   Replace `123456789012` with your 12-digit AWS account ID (get it with `aws sts get-caller-identity --query Account --output text`). S3 bucket names are globally unique across AWS and must be lowercase. If the account-specific name is also taken, add a short unique suffix. `terraform.tfvars` is ignored by Git.
 
 3. Initialize and review the plan using the profile that is allowed to create infrastructure:
 
@@ -58,7 +58,7 @@ CloudFront distributions can incur charges. Check current AWS pricing and set ac
    terraform apply
    ```
 
-   Review the plan before confirming. CloudFront creation and updates can take several minutes. Terraform outputs the bucket name, distribution ID, URL, and deploy IAM username.
+   Review the plan before confirming. If S3 reports `BucketAlreadyExists`, choose a different globally unique `bucket_name` in `terraform.tfvars` and run `terraform apply` again. CloudFront creation and updates can take several minutes. Terraform outputs the bucket name, distribution ID, URL, and deploy IAM username.
 
 ## Create deployment credentials
 
