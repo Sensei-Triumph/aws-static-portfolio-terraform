@@ -17,10 +17,13 @@ The bucket blocks all public access. CloudFront uses Origin Access Control (OAC)
 
 ## Prerequisites
 
-- An AWS account and AWS CLI v2.
-- Terraform 1.5 or later.
+- WSL 2 with a Linux distribution such as Ubuntu.
+- An AWS account and AWS CLI v2 installed inside WSL.
+- Terraform 1.5 or later installed inside WSL.
 - An AWS CLI profile with permission to manage the resources in `main.tf`, including S3, CloudFront, IAM users and policies, and `sts:GetCallerIdentity`. Use a temporary or federated administrator session where possible; do not use root credentials.
-- PowerShell 7 or Windows PowerShell 5.1.
+- Run the commands below from a WSL terminal at the repository root. AWS CLI profiles configured in Windows are separate from WSL; configure the profiles you need inside WSL.
+
+Install Terraform and AWS CLI in your WSL distribution before continuing. If the repository is on your Windows drive, enter it from WSL with `cd "/mnt/c/Users/HP PC/Desktop/aws-static-portfolio-terraform"`. For best performance, consider keeping the repository in the WSL filesystem.
 
 CloudFront distributions can incur charges. Check current AWS pricing and set account billing alerts before deploying.
 
@@ -28,11 +31,11 @@ CloudFront distributions can incur charges. Check current AWS pricing and set ac
 
 1. Copy the example variables file and choose an S3 bucket name that is globally unique:
 
-   ```powershell
-   Copy-Item terraform.tfvars.example terraform.tfvars
+   ```bash
+   cp terraform.tfvars.example terraform.tfvars
    ```
 
-2. Edit `terraform.tfvars`:
+2. Edit `terraform.tfvars` with a text editor such as `nano terraform.tfvars`:
 
    ```hcl
    aws_region       = "us-east-1"
@@ -44,8 +47,8 @@ CloudFront distributions can incur charges. Check current AWS pricing and set ac
 
 3. Initialize and review the plan using the profile that is allowed to create infrastructure:
 
-   ```powershell
-   $env:AWS_PROFILE = "your-admin-profile"
+   ```bash
+   export AWS_PROFILE="your-admin-profile"
    terraform init
    terraform fmt -check
    terraform validate
@@ -54,7 +57,7 @@ CloudFront distributions can incur charges. Check current AWS pricing and set ac
 
 4. Provision the infrastructure:
 
-   ```powershell
+   ```bash
    terraform apply
    ```
 
@@ -68,7 +71,7 @@ Terraform creates the dedicated IAM user and scoped policy but does not create a
 2. Select the `deploy_user_name` output user, create an access key for **Command Line Interface (CLI)** use, and securely copy the secret access key. It is shown only once.
 3. Configure a named AWS CLI profile on your computer:
 
-   ```powershell
+   ```bash
    aws configure --profile portfolio-deploy
    ```
 
@@ -76,19 +79,19 @@ Terraform creates the dedicated IAM user and scoped policy but does not create a
 
 ## Deploy
 
-Before publishing, personalize `site/index.html` and `site/404.html`: replace `Your Name`, the `YN` initials, and `hello@example.com`, and update the project descriptions and contact links. Then run:
+Before publishing, personalize `site/index.html` and `site/404.html`: replace `Your Name`, the `YN` initials, and `hello@example.com`, and update the project descriptions and contact links. Then run this from the repository root in WSL:
 
-```powershell
-.\scripts\deploy.ps1
+```bash
+bash ./scripts/deploy.sh
 ```
 
-The script syncs the site (including deletions) and requests a CloudFront invalidation. To use another named profile:
+The script syncs the site (including deletions) and requests a CloudFront invalidation. It defaults to the `portfolio-deploy` AWS profile. To use another named profile, pass its name as an argument:
 
-```powershell
-.\scripts\deploy.ps1 -Profile "portfolio-deploy"
+```bash
+bash ./scripts/deploy.sh another-profile
 ```
 
-The default profile name is `portfolio-deploy`. Once CloudFront finishes deploying, visit the `site_url` Terraform output.
+Once CloudFront finishes deploying, visit the `site_url` Terraform output.
 
 ## IAM permissions
 
@@ -104,10 +107,10 @@ It does not grant public access, bucket configuration changes, access to other b
 
 First remove the uploaded objects, then destroy the infrastructure using the same administrator profile used to create it:
 
-```powershell
-$env:AWS_PROFILE = "your-admin-profile"
-$bucket = terraform output -raw bucket_name
-aws s3 rm "s3://$bucket" --recursive
+```bash
+export AWS_PROFILE="your-admin-profile"
+bucket="$(terraform output -raw bucket_name)"
+aws s3 rm "s3://${bucket}" --recursive
 terraform destroy
 ```
 
@@ -125,6 +128,7 @@ Terraform waits for CloudFront changes while deleting the distribution. The dedi
 ├── variables.tf
 ├── terraform.tfvars.example
 ├── scripts/
+│   ├── deploy.sh
 │   └── deploy.ps1
 └── site/
     ├── index.html
