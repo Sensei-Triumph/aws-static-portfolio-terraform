@@ -1,3 +1,9 @@
+<<<<<<< HEAD
 aws_region       = "us-east-1"
 bucket_name = "static-portfolio-123456789012"
 deploy_user_name = "portfolio-deploy"
+=======
+aws_region       = "us-east-1"
+bucket_name      = "aws-static-portfolio"
+deploy_user_name = "portfolio-deploy"
+>>>>>>> 86968e288e35bfaa4eb8b69e30443d229ee68a37
